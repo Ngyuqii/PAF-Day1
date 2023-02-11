@@ -5,7 +5,7 @@
 use hotelreservation;
 
 -- Create and link tables (only create once and block off after creation)
--- To link main to child table > foreign key(child-field to link) references main-table(main primary key)
+-- To link main to child table > foreign key(main-field to link) references main-table(main primary key)
 /*
 create table employee (
 	id int not null auto_increment,
@@ -107,24 +107,45 @@ where id = 9;
 -- Inner join adds main-tables to the child table > select fields required from child-table inner join main-table on child linked-field = main-field
 -- "r.id reservation_id" is giving an alias of reservation_id to r.id to avoid confusion between same name fields from 2 tables
 -- May add constraints / order to this
+-- Other options include left join / right join / full join
 /*
-select r.id reservation_id, c.id customer_id, c.first_name, c.last_name, r.start_date, r.end_date, room.room_type, room.price, r.total_cost
+select e.id employee_id, e.first_name, e.last_name, e.salary, d.id dependant_id, d.first_name, d.last_name, d.relationship, d.birth_date
+from dependant d inner join employee e
+on d.employee_id = e.id
+
+select r.id reservation_id, c.id customer_id, c.first_name, c.last_name, room.room_type, room.price, r.start_date, r.end_date, r.total_cost
 from reservation r inner join customer c
 on r.customer_id = c.id
 inner join room
 on r.room_id = room.id
 # where first_name like '%kiat%'
 order by start_date;
+*/
 
-select e.id employee_id, e.first_name, e.last_name, e.salary, d.id dependant_id, d.first_name, d.last_name, d.relationship, d.birth_date
+-- View to create a table-data from a conditional view of a base table or show an aggregated data from a join of 2 base tables
+/*
+create view employee_dependancy as
+select e.id employee_id, e.first_name employee_FN, e.last_name employee_LN, e.salary, d.id dependant_id, d.first_name dependant_FN, d.last_name dependant_LN, d.relationship, d.birth_date
 from dependant d inner join employee e
-on d.employee_id = e.id
+on d.employee_id = e.id;
+
+create view booking_records as
+select r.id reservation_id, c.id customer_id, c.first_name, c.last_name, room.room_type, room.price, r.start_date, r.end_date, r.total_cost
+from reservation r inner join customer c
+on r.customer_id = c.id
+inner join room
+on r.room_id = room.id;
+*/
+-- To read data from views
+/*
+select * from employee_dependancy;
+select * from booking_records;
 */
 
 -- Some methods to extract specific data
 /*
 -- Count(*) indicates the total number of records, the following code counts average
-select sum(total_cost) / count(*) from reservation;
+select sum(total_cost) / count(*) as avg_price_per_stay from reservation;
 
 -- Directly find the avg of total cost from a stated start date
 select start_date, avg(total_cost) from reservation
@@ -148,6 +169,15 @@ union
 select 'Mar 2023' as period, room_id, count(*) from reservation
 where start_date between "2023-03-01" and "2023-03-31"
 group by room_id;
+
+-- Sub Query
+select customer_id, count(*) from
+(select r.id reservation_id, c.id customer_id, c.first_name, c.last_name, room.room_type, room.price, r.start_date, r.end_date, r.total_cost
+from reservation r inner join customer c
+on r.customer_id = c.id
+inner join room
+on r.room_id = room.id) booking
+group by customer_id;
 */
 
 -- To delete the database / table
